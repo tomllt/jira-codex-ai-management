@@ -1,0 +1,26 @@
+{
+  "issue_key": "PROJ-456",
+  "result": "human_review",
+  "summary": [
+    "已实现支付回调幂等校验",
+    "补充重复回调测试用例"
+  ],
+  "files_touched": [
+    "src/payment/callback_handler.py",
+    "tests/payment/test_callback_handler.py"
+  ],
+  "test_results": [
+    {
+      "command": "pytest tests/payment -q",
+      "status": "passed"
+    }
+  ],
+  "risks": [
+    "当前依赖事件ID唯一性，若上游不保证可能需要二次补强"
+  ],
+  "blockers": [],
+  "artifacts": {
+    "commit_link": "",
+    "pr_link": ""
+  }
+}

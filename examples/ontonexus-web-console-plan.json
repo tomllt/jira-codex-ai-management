@@ -1,0 +1,53 @@
+{
+  "epic_key": "ON-WEB-NAV-001",
+  "epic_summary": "提升 OntoNexus Web Console 导航配置的可验证性",
+  "stories": [
+    {
+      "summary": "补充 Web Console 导航配置一致性测试",
+      "description": "为 web-console 的导航配置补充自动化测试，覆盖角色 landing path、模块 defaultPath 与导航项之间的一致性约束。",
+      "acceptance_criteria": [
+        "存在针对 shellNavigation 配置的一致性测试",
+        "测试能覆盖平台管理员和专题分析师 landing path",
+        "测试能覆盖 MODULE_ITEMS defaultPath 与 NAV_ITEMS 的映射关系",
+        "测试命令在 web-console 包内可运行"
+      ],
+      "dependencies": [],
+      "risks": [
+        "若直接断言过多静态文案，后续导航文案调整会导致测试脆弱"
+      ],
+      "labels": ["frontend", "web-console", "navigation"],
+      "tasks": [
+        {
+          "summary": "为 shellNavigation 添加导航配置一致性测试",
+          "issue_type": "Task",
+          "labels": ["frontend", "tests", "navigation"],
+          "repo": "OntoNexus",
+          "workdir": "/root/workspace/OntoNexus",
+          "module_scope": [
+            "apps/web-console/src/App.test.tsx",
+            "apps/web-console/src/shellNavigation.ts"
+          ],
+          "definition_of_done": [
+            "新增针对导航配置的一致性测试",
+            "保持现有 landing path 行为不变",
+            "测试命令通过"
+          ],
+          "acceptance_criteria": [
+            "测试能验证平台管理员 landing path 指向治理中心",
+            "测试能验证专题分析师 landing path 指向场景中心",
+            "测试能验证每个 MODULE_ITEMS.defaultPath 都能在 NAV_ITEMS 中找到对应入口，或等于模块基准默认路径",
+            "测试命令成功通过"
+          ],
+          "execution_hint": "优先在现有 App.test.tsx 附近补测试，尽量不要改动生产逻辑；如果发现更适合抽到独立测试文件，也保持改动最小。",
+          "test_command": "pnpm --filter @ontonexus/web-console test",
+          "risk_notes": [
+            "避免把测试写成对全部中文 label 的快照断言",
+            "尽量校验配置关系而不是页面细节"
+          ],
+          "ai_confidence": 0.92
+        }
+      ]
+    }
+  ],
+  "questions_for_human": []
+}

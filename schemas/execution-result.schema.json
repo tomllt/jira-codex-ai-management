@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/execution-result.schema.json",
+  "title": "ExecutionResult",
+  "type": "object",
+  "required": [
+    "issue_key",
+    "result",
+    "summary",
+    "files_touched",
+    "test_results",
+    "risks",
+    "blockers",
+    "artifacts"
+  ],
+  "properties": {
+    "issue_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result": {
+      "type": "string",
+      "enum": ["human_review", "blocked", "in_progress"]
+    },
+    "summary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "files_touched": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "test_results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/test_result"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "$ref": "#/$defs/artifacts"
+    }
+  },
+  "$defs": {
+    "test_result": {
+      "type": "object",
+      "required": ["command", "status"],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "skipped"]
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["commit_link", "pr_link"],
+      "properties": {
+        "commit_link": {
+          "type": "string"
+        },
+        "pr_link": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
