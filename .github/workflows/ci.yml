@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile prototype scripts
+        run: python -m py_compile scripts/*.py
+
+      - name: Show CLI help
+        run: python scripts/orchestrator.py --help
+
+      - name: Validate AI plan example
+        run: python scripts/orchestrator.py validate ai-plan examples/sample-ai-plan.json
+
+      - name: Validate execution result example
+        run: python scripts/orchestrator.py validate execution-result examples/sample-execution-result.json
