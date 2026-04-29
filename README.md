@@ -1,16 +1,109 @@
 # Jira + Codex AI Management
 
-一个面向 `Jira + Codex CLI` 协同的 AI 半自动化项目原型，用于沉淀并逐步实现需求分析、故事定义、任务拆解、Jira 自动建单、Sprint 内任务执行与状态回写。
+一个把 `Jira` 治理边界和 `Codex CLI` 执行能力连接起来的 AI 协同原型，用于把已批准的研发工作转成可执行任务，并以结构化结果回写到 Jira。
 
-## 目标
+## What It Is
 
-- 让 AI 自动分析需求并生成 `Story` / `Task`
-- 保持人工掌握 Sprint 排期与分发权
-- 让 `Codex CLI` 只消费 Sprint 中批准执行的任务
-- 允许 `Codex CLI` 更新执行态状态并回写执行结果
-- 建立可审计、可扩展的 Jira 管理赋能方案
+这是一个面向研发流程的 `Jira + Codex CLI` 协同原型。它不试图替代 Jira，也不试图让 AI 接管项目管理，而是把 AI 放进需求拆解、任务准备、执行落地和结果回写这条链路中。
 
-## 当前文档
+在这个模型里：
+
+- `Jira` 负责流程控制、任务审计、Sprint 边界和人工治理
+- `Codex CLI` 负责分析、任务执行和结构化结果输出
+- 当前仓库负责 Orchestrator、Schema、Prompt、示例数据和本地原型命令
+
+## Why It Exists
+
+很多 AI 工程实践只关注“生成代码”，但实际研发流程里，需求转 Story、Story 转 Task、Task 进入执行边界、执行结果回写和阻塞可追踪同样关键。
+
+这个项目的目标是验证一条更完整的路径：
+
+- AI 可以参与需求分析和任务准备
+- 人工仍然保留 Sprint、优先级和资源调度控制权
+- 已批准任务可以被 Codex 稳定消费并回写结果
+- 全过程保持结构化输出和审计留痕
+
+## Core Capabilities
+
+当前仓库已经验证或包含以下原型能力：
+
+- 基于结构化 plan 自动创建 Jira Story / Task
+- 查询 Sprint 内 `Ready for Codex` 任务
+- 任务 claim、执行状态流转和 comment / label 回写
+- `run-task` / `run-next` 的 dry-run 与真实执行骨架
+- `prepare-task` / `preflight-task` / `suggest-task-fixes` 的执行前守门流程
+- 基于 Schema 的 planning / execution JSON 校验
+
+## Architecture
+
+### Jira
+
+- 唯一任务事实源
+- 唯一流程审计源
+- Sprint 规划与治理中心
+
+### Codex CLI
+
+- 负责需求分析、任务执行和结构化结果输出
+- 只处理进入执行边界的任务
+
+### Orchestrator CLI
+
+- 负责编排 Jira 与 Codex
+- 负责建单、查询、claim、执行与回写入口
+
+### Schemas / Prompts / Examples
+
+- `schemas/`：结构化契约
+- `prompts/`：需求分析与任务执行提示模板
+- `examples/`：示例 plan、执行结果与 comment 数据
+
+## Quick Start
+
+```bash
+cp .env.example .env
+python scripts/orchestrator.py check-config
+python scripts/orchestrator.py check-jira
+python scripts/orchestrator.py validate ai-plan examples/sample-ai-plan.json
+python scripts/orchestrator.py validate execution-result examples/sample-execution-result.json
+python scripts/orchestrator.py search-ready --limit 10
+```
+
+更多命令和说明见 `docs/implementation.md`。
+
+## Current Status
+
+当前仓库是一个**已验证原型**，不是成熟产品。
+
+已经确认的部分包括：
+
+- 本地 Jira Server 接入可用
+- `search-ready`、`claim`、`run-task --dry-run`、`run-next --dry-run` 已验证
+- 真实 `codex exec` 已通过 `/root/.codex` 配置成功调起
+- `Workdir` / `Module` / `Test Command` 的执行前校验链路已落地
+
+当前限制仍然包括：
+
+- 真实执行依赖 Jira task 中存在有效的 `Workdir`、`Module Scope` 和 `Test Command`
+- 不同语言栈和本地工具链是否可用仍会影响真实执行
+- 当前实现仍以 `scripts/` 原型结构为主，后续需要迁移到更清晰的工程化包结构
+
+## Roadmap
+
+当前路线聚焦在从“可运行原型”走向“可持续演进的工程化工具”：
+
+1. 分层重构与测试骨架
+2. Orchestrator / Adapter / Runner 职责收敛
+3. 真实执行链路加固
+4. Jira 字段治理与链路增强
+5. 持续消费和运行可见性
+
+更详细的阶段规划见：
+
+- `docs/roadmap.md`
+- `.planning/ROADMAP.md`
+
+## Docs Index
 
 - `docs/overview.md`：整体定位、目标、能力边界
 - `docs/workflow.md`：端到端流程与职责划分
@@ -20,115 +113,36 @@
 - `docs/implementation.md`：当前实现方式与命令
 - `docs/roadmap.md`：分阶段落地建议
 - `docs/README.md`：文档索引
+- `docs/2026-04-28-refactor-implementation-plan.md`：原型分层重构实施计划
 
-## Prototype 资产
+## Prototype Assets
 
-- `schemas/ai-plan.schema.json`：Epic 分析输出 schema
-- `schemas/execution-result.schema.json`：任务执行结果 schema
-- `prompts/epic_to_plan.prompt.md`：Epic -> Story/Task 规划 prompt
-- `prompts/task_execution.prompt.md`：Sprint Task 执行 prompt
-- `examples/sample-ai-plan.json`：建单示例
-- `examples/sample-execution-result.json`：执行结果示例
-- `examples/sample-jira-comment.md`：Jira comment 示例
-- `scripts/config.py`：环境变量与配置加载
-- `scripts/jql.py`：Ready-for-Codex JQL 生成
-- `scripts/comment_builder.py`：执行结果 comment 构建
-- `scripts/jira_client.py`：轻量 Jira REST Client
-- `scripts/schema_validate.py`：轻量 schema 校验
-- `scripts/codex_runner.py`：Codex 执行 runner
-- `scripts/orchestrator.py`：原型编排器 CLI
-- `.env.example`：配置模板
-- `PROTOTYPE.md`：原型目录说明
+- `schemas/ai-plan.schema.json`
+- `schemas/execution-result.schema.json`
+- `prompts/epic_to_plan.prompt.md`
+- `prompts/task_execution.prompt.md`
+- `examples/sample-ai-plan.json`
+- `examples/sample-execution-result.json`
+- `examples/sample-jira-comment.md`
+- `scripts/orchestrator.py`
 
-## 当前本地 Jira 接入
+## Local Validation Notes
 
-当前已探测到本地 Docker Jira：
+当前本地已验证的 Jira 环境：
 
-- 本地访问地址：`http://127.0.0.1:18080`
-- 容器名：`jira-software`
+- 地址：`http://127.0.0.1:18080`
 - 部署类型：`Jira Server`
 - 版本：`8.16.1`
 - 推荐 API 版本：`2`
 
-## 当前已实现能力
+已经验证过的本地结果包括：
 
-当前项目已经包含：
+- 创建测试任务与样例 Story / Task
+- Ready 任务检索
+- claim 状态迁移
+- dry-run comment / label 回写
+- 真实 `codex exec` 调起
 
-- 分析文档与数据契约
-- Story / Task 自动建单
-- Ready 任务查询
-- 任务 claim
-- Dry-run 执行结果生成
-- Jira comment / label / 状态回写
-- `run-task` 单任务执行入口
-- `run-next` 单次消费入口
-- 轻量 schema 校验
-- 真实 `codex exec` 接入骨架
-- `/root/.codex` 配置显式接入
-- `Workdir` 自动解析与 `-C` 执行
-- `Module` / `Workdir` 一致性预检
-- `Test Command` 可执行环境预检
-- `pnpm -> corepack pnpm` 自动兼容尝试
-- `preflight-task` 任务可执行性审查
-- `suggest-task-fixes` 任务 scope 修正建议
-- `apply-task-fixes` 一键应用建议修正
-- `apply-task-fixes --dry-run/--only/--exclude` 审批式应用
-- `prepare-task` 聚合建议/应用/preflight
-- `draft-plan-from-requirement` / `create-from-requirement` 需求入口
-- `set-workdir` Jira 描述修正命令
-- `refine-task-scope` Jira 任务范围精修命令
-- `--timeout` 执行超时控制
+## License
 
-## 当前真实 Codex 状态
-
-已确认：
-
-- 本机存在 `codex`
-- `codex exec` 可用
-- `CodexRunner` 现在显式使用：
-  - `CODEX_HOME=/root/.codex`
-  - `HOME=/root`
-- 真实调用时不再出现认证 `401`
-- `/root/.codex` 中的 provider 已生效，验证输出显示为 `univibe`
-
-当前新的关键前提是：
-
-- Jira task 里的 `Workdir` 必须是真实存在的本机仓库路径
-- Jira task 里的 `Module` / `Test Command` 也必须和目标仓库实际结构一致
-- 真实执行前还需要满足对应语言/包管理器工具在 PATH 中可用
-
-## 快速开始
-
-```bash
-cp .env.example .env
-python scripts/orchestrator.py check-config
-python scripts/orchestrator.py check-jira
-python scripts/orchestrator.py validate ai-plan examples/sample-ai-plan.json
-python scripts/orchestrator.py create-from-plan examples/sample-ai-plan.json
-python scripts/orchestrator.py search-ready --limit 10
-python scripts/orchestrator.py run-next --dry-run --no-writeback
-```
-
-更多命令见 `docs/implementation.md`。
-
-## 已验证结果
-
-已经在本地 Jira `ON` 项目中验证：
-
-- 创建测试任务：`ON-1`
-- 创建样例故事：`ON-2`、`ON-8`
-- 创建样例任务：`ON-3`、`ON-9`
-- `search-ready` 能检索 ready 任务
-- `claim` 能更新状态和标签
-- `run-task --dry-run` 能回写 comment 和标签
-- `run-next --dry-run --no-writeback` 能自动消费下一条 ready 任务
-- 真实 `codex exec` 已通过 `/root/.codex` 配置成功启动并返回结果
-- 真实执行已验证到 `Workdir` 检查阶段
-
-## 下一步建议
-
-1. 确定真实仓库路径并更新 Jira task 的 `Workdir`
-2. 用 `run-task --timeout 300` 做一次真实执行验证
-3. 增加 Jira 自定义字段映射
-4. 增加 `run-loop` 持续消费 ready 任务
-5. 增加 Epic 关联字段写入
+This project is licensed under the Apache License 2.0. See `LICENSE`.
