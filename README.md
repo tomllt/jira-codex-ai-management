@@ -1,5 +1,8 @@
 # Jira + Codex AI Management
 
+[![CI](https://github.com/tomllt/jira-codex-ai-management/actions/workflows/ci.yml/badge.svg)](https://github.com/tomllt/jira-codex-ai-management/actions/workflows/ci.yml)
+![License: Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+
 一个把 `Jira` 治理边界和 `Codex CLI` 执行能力连接起来的 AI 协同原型，用于把已批准的研发工作转成可执行任务，并以结构化结果回写到 Jira。
 
 ## What It Is
@@ -70,6 +73,11 @@ python scripts/orchestrator.py search-ready --limit 10
 ```
 
 更多命令和说明见 `docs/implementation.md`。
+
+## Contributing And Security
+
+- 协作说明见 `CONTRIBUTING.md`
+- 安全问题与私下披露说明见 `SECURITY.md`
 
 ## Current Status
 
