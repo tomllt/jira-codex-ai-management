@@ -8,6 +8,8 @@
 
 Add a clear, lightweight collaboration layer for external contributors without overstating project maturity or introducing heavy governance overhead. The repository should make it obvious how to report bugs, suggest features, open pull requests, contribute safely, and disclose security concerns.
 
+This design also acknowledges the repository's current state: the repo is private today. These collaboration assets should therefore work for invited collaborators immediately while also being suitable for a future public-facing state if repository visibility changes later.
+
 ## Scope
 
 This design covers six repository-facing assets:
@@ -33,7 +35,8 @@ This design covers six repository-facing assets:
 
 This work serves three reader types:
 
-- External contributors who want to file bugs, request features, or submit PRs
+- Invited collaborators who can access the private repository today
+- Future external contributors if the repository is made public later
 - Maintainers who need better issue quality and clearer contributor expectations
 - Security-conscious readers who need to know what should be reported privately
 
@@ -41,7 +44,7 @@ This work serves three reader types:
 
 ### Open But Governed
 
-The repository should welcome external collaboration, including code contributions, while still protecting the project's workflow boundaries and prototype status.
+The repository should welcome collaboration, including code contributions, while still protecting the project's workflow boundaries and prototype status. Because the repository is currently private, the first practical audience is invited collaborators rather than anonymous public drive-by contributors.
 
 ### Lightweight By Default
 
@@ -63,14 +66,14 @@ Use GitHub issue forms rather than a freeform Markdown template.
 
 The form should collect:
 
-- concise summary
-- reproduction steps
-- expected behavior
-- actual behavior
-- affected area
-- local environment notes
-- whether Jira, Codex, local toolchain, schema, docs, or CI are involved
-- optional screenshots or logs
+- required: concise summary
+- required: reproduction steps
+- required: expected behavior
+- required: actual behavior
+- required: affected area
+- optional: local environment notes
+- required: whether Jira, Codex, local toolchain, schema, docs, or CI are involved
+- optional: screenshots or logs
 
 #### Purpose
 
@@ -82,13 +85,13 @@ Use a GitHub issue form focused on problem framing rather than implementation pr
 
 The form should collect:
 
-- concise request summary
-- current pain point or missing capability
-- proposed improvement
-- alternatives considered
-- expected user value
-- whether the change affects Jira governance boundaries
-- whether the change affects Codex execution boundaries
+- required: concise request summary
+- required: current pain point or missing capability
+- required: proposed improvement
+- optional: alternatives considered
+- required: expected user value
+- required: whether the change affects Jira governance boundaries
+- required: whether the change affects Codex execution boundaries
 
 #### Purpose
 
@@ -153,6 +156,17 @@ It should explain:
 - expected best-effort response language
 - what is currently out of scope for formal guarantees
 
+#### Private Reporting Channel Requirement
+
+This spec does not allow the implementation to invent a placeholder reporting channel. Before implementing `SECURITY.md`, one maintainer-controlled private channel must be explicitly confirmed and used in the document.
+
+Accepted options, in priority order:
+
+1. GitHub private vulnerability reporting for this repository, if enabled
+2. A maintainer-controlled email address that can actually receive reports
+
+If neither exists at implementation time, implementation must stop and ask for a real channel instead of shipping a vague or placeholder `SECURITY.md`.
+
 #### Repository-Specific Sensitive Areas
 
 The security doc should explicitly mention:
@@ -169,7 +183,7 @@ Only make narrow collaboration-related updates.
 
 Add:
 
-- a small set of high-signal badges near the top
+- exactly two badges near the top: CI status and license
 - a pointer to `CONTRIBUTING.md`
 - a pointer to `SECURITY.md`
 
@@ -203,7 +217,6 @@ Recommended badge categories:
 
 - CI status
 - license
-- optional prototype/status indicator only if it adds signal without clutter
 
 Avoid badge walls or decorative badges.
 
@@ -216,7 +229,7 @@ The design is successful when:
 3. `CONTRIBUTING.md` clearly explains how to collaborate and what contribution types need discussion first.
 4. `SECURITY.md` clearly distinguishes private disclosure from normal public issue filing.
 5. README includes visible entry points to collaboration and security guidance.
-6. The result supports fully open collaboration without implying the repository has heavyweight maintainer operations.
+6. The result supports invited collaborators now and future public collaboration later without implying the repository has heavyweight maintainer operations.
 
 ## Risks
 
