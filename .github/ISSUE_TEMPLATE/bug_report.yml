@@ -1,0 +1,98 @@
+name: Bug report
+description: Report a reproducible problem in the repository, templates, docs, or prototype workflow.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue.
+        Please provide enough detail to distinguish a repository bug from a local setup or environment problem.
+
+  - type: input
+    id: summary
+    attributes:
+      label: 问题摘要
+      description: 用一句话说明问题。
+      placeholder: 例如：`prepare-task` 在缺少模块路径时给出了错误建议
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: 影响范围
+      description: 这个问题最接近哪个区域？
+      options:
+        - Orchestrator CLI
+        - Jira integration
+        - Codex runner
+        - Schema / prompt contract
+        - Documentation
+        - GitHub / CI
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 按顺序写出可以稳定复现问题的步骤。
+      placeholder: |
+        1. 运行 `python scripts/orchestrator.py ...`
+        2. 使用某个输入或 issue key
+        3. 观察报错或异常行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+      description: 你原本期待发生什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 实际发生了什么？请贴出关键报错或异常输出。
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: involved_surfaces
+    attributes:
+      label: 涉及面
+      description: 请选择所有相关项。
+      options:
+        - label: Jira
+        - label: Codex
+        - label: Local toolchain
+        - label: Schema / prompts
+        - label: Documentation
+        - label: CI / GitHub
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 本地环境说明
+      description: 可选。补充 Python 版本、操作系统、是否连接本地 Jira、是否使用真实 `codex exec` 等。
+      placeholder: |
+        Python 3.13
+        Ubuntu 24.04
+        Local Jira Server
+        Dry-run / real Codex mode
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志 / 截图
+      description: 可选。补充截图、命令输出或最小上下文。
+    validations:
+      required: false
