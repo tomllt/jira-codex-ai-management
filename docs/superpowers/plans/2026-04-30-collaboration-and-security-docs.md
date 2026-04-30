@@ -256,7 +256,7 @@ Write `.github/pull_request_template.md` with this exact content:
 - 
 ```
 
-- [ ] **Step 5: Verify the template files contain the required structural markers**
+- [ ] **Step 5: Verify the template files have the required structure and key fields**
 
 Run:
 
@@ -264,40 +264,48 @@ Run:
 python - <<'PY'
 from pathlib import Path
 
-checks = {
-    ".github/ISSUE_TEMPLATE/bug_report.yml": [
-        "name: Bug report",
-        "label: 问题摘要",
-        "label: 复现步骤",
-        "label: 预期行为",
-        "label: 实际行为",
-    ],
-    ".github/ISSUE_TEMPLATE/feature_request.yml": [
-        "name: Feature request",
-        "label: 请求摘要",
-        "label: 当前问题 / 缺口",
-        "label: 建议改进",
-        "label: 预期价值",
-    ],
-    ".github/pull_request_template.md": [
-        "## Summary",
-        "## Why This Change Exists",
-        "## Testing / Verification",
-        "## Risks / Limitations",
-    ],
+forms = {
+    ".github/ISSUE_TEMPLATE/bug_report.yml": {
+        "top_level": ["name:", "description:", "title:", "body:"],
+        "labels": ["问题摘要", "复现步骤", "预期行为", "实际行为", "涉及面"],
+        "min_blocks": 7,
+    },
+    ".github/ISSUE_TEMPLATE/feature_request.yml": {
+        "top_level": ["name:", "description:", "title:", "body:"],
+        "labels": ["请求摘要", "当前问题 / 缺口", "建议改进", "预期价值"],
+        "min_blocks": 7,
+    },
 }
 
-for path, markers in checks.items():
+for path, rules in forms.items():
     text = Path(path).read_text(encoding="utf-8")
-    for marker in markers:
-        if marker not in text:
-            raise SystemExit(f"missing marker {marker!r} in {path}")
-print("template markers verified")
+    lines = text.splitlines()
+    for marker in rules["top_level"]:
+        if not any(line.startswith(marker) for line in lines):
+            raise SystemExit(f"missing top-level key {marker!r} in {path}")
+    block_count = sum(1 for line in lines if line.startswith("  - type:"))
+    if block_count < rules["min_blocks"]:
+        raise SystemExit(f"expected at least {rules['min_blocks']} form blocks in {path}, found {block_count}")
+    for label in rules["labels"]:
+        if f"label: {label}" not in text:
+            raise SystemExit(f"missing label {label!r} in {path}")
+
+pr_text = Path(".github/pull_request_template.md").read_text(encoding="utf-8")
+for marker in [
+    "## Summary",
+    "## Why This Change Exists",
+    "## Testing / Verification",
+    "## Risks / Limitations",
+]:
+    if marker not in pr_text:
+        raise SystemExit(f"missing marker {marker!r} in .github/pull_request_template.md")
+
+print("template structure verified")
 PY
 ```
 
 Expected:
-- Output is `template markers verified`
+- Output is `template structure verified`
 
 - [ ] **Step 6: Commit the issue forms and PR template**
 
@@ -513,14 +521,81 @@ This repository is a prototype and does not claim enterprise-grade operational g
 Run:
 
 ```bash
-echo "A real maintainer-controlled vulnerability reporting email is required before writing SECURITY.md."
+export SECURITY_REPORT_EMAIL="real-maintainer-email@example.org"
+python - <<'PY'
+import os
+
+email = os.environ.get("SECURITY_REPORT_EMAIL", "").strip()
+if not email or "@" not in email or email.endswith("@example.org") or "example.com" in email:
+    raise SystemExit("SECURITY_REPORT_EMAIL must be set to a real maintainer-controlled email address")
+print(f"security email accepted: {email}")
+PY
 ```
 
 Expected:
-- Execution stops here until the user provides the real address or enables GitHub private vulnerability reporting
-- Do not commit a placeholder-based `SECURITY.md`
+- Output begins with `security email accepted:`
+- The value is a real maintainer-controlled address, not a placeholder
 
-- [ ] **Step 4: Verify `SECURITY.md` has no placeholders and contains a private channel**
+- [ ] **Step 4: If Path B is true, create `SECURITY.md` with the maintainer-email version**
+
+Run:
+
+```bash
+cat > SECURITY.md <<EOF
+# Security Policy
+
+## Reporting A Vulnerability
+
+Please do **not** report security issues in public GitHub issues.
+
+Send vulnerability reports privately to: \`${SECURITY_REPORT_EMAIL}\`
+
+Include enough detail for triage, but avoid forwarding secrets unless they are strictly necessary to explain the issue.
+
+## What To Report Privately
+
+Report privately if the issue involves any of the following:
+
+- Jira credentials, tokens, or authentication handling
+- \`.env\` contents or secrets exposure
+- local absolute workdir paths that reveal sensitive repository layout
+- copied task or requirement data from private local Jira instances
+- real \`codex exec\` traces or outputs that expose sensitive local repository context
+- unsafe command execution or privilege boundary problems
+
+## What Not To Post Publicly
+
+Do not post the following in public issues or PRs:
+
+- passwords, API tokens, or cookies
+- private Jira issue content
+- internal repository paths from private machines
+- execution transcripts that expose sensitive data
+
+If you are unsure whether something is sensitive, treat it as sensitive and use the private reporting path.
+
+## Response Expectations
+
+This repository does not provide a formal SLA, but reported vulnerabilities will be reviewed on a best-effort basis.
+
+When possible, reports should include:
+
+- a short summary
+- impact
+- reproduction steps
+- any mitigation ideas
+
+## Out Of Scope For Formal Guarantees
+
+This repository is a prototype and does not claim enterprise-grade operational guarantees, dedicated on-call coverage, or audited production security controls.
+EOF
+```
+
+Expected:
+- `SECURITY.md` exists
+- The committed file contains the real email address, not a placeholder
+
+- [ ] **Step 5: Verify `SECURITY.md` has no placeholders and contains a private channel**
 
 Run:
 
@@ -548,7 +623,7 @@ PY
 Expected:
 - Output is `security policy verified`
 
-- [ ] **Step 5: Commit the security policy**
+- [ ] **Step 6: Commit the security policy**
 
 Run:
 
@@ -700,14 +775,34 @@ Expected:
 - Output shows only the current branch header
 - No unstaged or uncommitted files remain
 
-- [ ] **Step 5: If implementation is being completed in a feature branch, push and verify CI after integration**
+- [ ] **Step 5: If implementation is being completed in a feature branch, merge back to `main`, then push `main`**
 
 Run:
 
 ```bash
-git push
+current_branch=$(git branch --show-current)
+if [ "$current_branch" != "main" ]; then
+  git checkout main
+  git pull --ff-only
+  git merge --ff-only "$current_branch"
+  python -m py_compile scripts/*.py
+  python scripts/orchestrator.py validate ai-plan examples/sample-ai-plan.json
+  python scripts/orchestrator.py validate execution-result examples/sample-execution-result.json
+fi
+git push origin main
 ```
 
 Expected:
 - Push succeeds
-- If the branch is integrated into `main`, GitHub Actions should pick up the change set normally
+- The canonical branch on the remote is `main`
+
+- [ ] **Step 6: Verify that GitHub Actions picked up the integrated change set**
+
+Run:
+
+```bash
+gh run list --repo tomllt/jira-codex-ai-management --limit 5
+```
+
+Expected:
+- At least one recent `CI` run is visible for the pushed change set

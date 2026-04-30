@@ -6,7 +6,7 @@
 
 ## Goal
 
-Add a clear, lightweight collaboration layer for external contributors without overstating project maturity or introducing heavy governance overhead. The repository should make it obvious how to report bugs, suggest features, open pull requests, contribute safely, and disclose security concerns.
+Add a clear, lightweight collaboration layer for collaborators and future external contributors without overstating project maturity or introducing heavy governance overhead. The repository should make it obvious how to report bugs, suggest features, open pull requests, contribute safely, and disclose security concerns.
 
 This design also acknowledges the repository's current state: the repo is private today. These collaboration assets should therefore work for invited collaborators immediately while also being suitable for a future public-facing state if repository visibility changes later.
 
